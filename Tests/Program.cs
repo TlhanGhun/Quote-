@@ -28,7 +28,6 @@
 //  either expressed or implied, of the FreeBSD Project.
 // </copyright>
 // <author>Sven Walther</author>
-// <summary>Some helper methods for HTTP requests</summary>
 //-----------------------------------------------------------------------
 
 using System;

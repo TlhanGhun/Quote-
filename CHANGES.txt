@@ -1,2 +1,6 @@
+1.0.1
+Added popularity floats for articles and recommendation (API update 1.0.3 at https://github.com/QUOTEfm/QUOTE.fm-API)
+Tested with new date format (no changes needed)
+
 1.0
 Initial release with all API calls available currently available
