@@ -45,6 +45,12 @@ namespace QuoteSharp
     {
         public const string ApiBaseUrl = "https://quote.fm/api";
 
+        public enum Scopes {
+            none,
+            time,
+            popular
+        }
+
         #region Recommendations
         public static Recommendation getRecommendation(decimal id)
         {
@@ -58,12 +64,7 @@ namespace QuoteSharp
             return recommendation;
         }
 
-        public static ListOfRecommendations getRecommendationsListByArticle(decimal id)
-        {
-            return getRecommendationsListByArticle(id, 0);
-        }
-
-        public static ListOfRecommendations getRecommendationsListByArticle(decimal id, decimal page)
+        public static ListOfRecommendations getRecommendationsListByArticle(decimal id, decimal page = 0, Scopes scope = Scopes.none)
         {
             if (id == 0)
             {
@@ -71,24 +72,21 @@ namespace QuoteSharp
             }
             ListOfRecommendations listOfRecommendations;
             Response webResponse;
-            if (page == 0)
+            string requestUrl = string.Format("{0}{1}?id={2}", ApiBaseUrl, "/recommendation/listByArticle/", id.ToString());
+            if (page != 0)
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}", ApiBaseUrl, "/recommendation/listByArticle/", id.ToString()));
+                requestUrl += "&page=" + page.ToString();
             }
-            else
+            if(scope != Scopes.none) 
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}&page=", ApiBaseUrl, "/recommendation/listByArticle/", id.ToString(), page.ToString()));
+                requestUrl += "&scope=" + scope.ToString();
             }
+            webResponse = SendGetRequest(requestUrl);
             listOfRecommendations = JsonConvert.DeserializeObject<ListOfRecommendations>(webResponse.Content);
             return listOfRecommendations;
         }
 
-        public static ListOfRecommendations getRecommendationsListByUser(string username)
-        {
-            return getRecommendationsListByUser(username, 0);
-        }
-
-        public static ListOfRecommendations getRecommendationsListByUser(string username, decimal page)
+        public static ListOfRecommendations getRecommendationsListByUser(string username, decimal page = 0, Scopes scope = Scopes.none)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -96,14 +94,16 @@ namespace QuoteSharp
             }
             ListOfRecommendations listOfRecommendations;
             Response webResponse;
-            if (page == 0)
+            string requestUrl = string.Format("{0}{1}?username={2}", ApiBaseUrl, "/recommendation/listByUser/", System.Web.HttpUtility.UrlEncode(username));
+            if (page != 0)
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?username={2}", ApiBaseUrl, "/recommendation/listByUser/", System.Web.HttpUtility.UrlEncode(username)));
+                requestUrl += "&page=" + page.ToString();
             }
-            else
+            if(scope != Scopes.none) 
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?username={2}&page=", ApiBaseUrl, "/recommendation/listByUser/", System.Web.HttpUtility.UrlEncode(username.ToString()), page.ToString()));
+                requestUrl += "&scope=" + scope.ToString();
             }
+            webResponse = SendGetRequest(requestUrl);
             if (webResponse.Content != null)
             {
                 listOfRecommendations = JsonConvert.DeserializeObject<ListOfRecommendations>(webResponse.Content);
@@ -131,12 +131,7 @@ namespace QuoteSharp
         }
 
 
-        public static ListOfArticles getArticlesListByPage(decimal id)
-        {
-            return getArticlesListByPage(id, 0);
-        }
-
-        public static ListOfArticles getArticlesListByPage(decimal id, decimal page)
+        public static ListOfArticles getArticlesListByPage(decimal id, decimal page = 0, Scopes scope = Scopes.none)
         {
             if (id == 0)
             {
@@ -144,19 +139,22 @@ namespace QuoteSharp
             }
             ListOfArticles listOfArticles;
             Response webResponse;
-            if (page == 0)
+            
+            string requestUrl = string.Format("{0}{1}?id={2}", ApiBaseUrl, "/article/listByPage/", id.ToString());
+            if (page != 0)
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}", ApiBaseUrl, "/article/listByPage/", id.ToString()));
+                requestUrl += "&page=" + page.ToString();
             }
-            else
+            if(scope != Scopes.none) 
             {
-                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}&page=", ApiBaseUrl, "/article/listByPage/", id.ToString(), page.ToString()));
+                requestUrl += "&scope=" + scope.ToString();
             }
+            webResponse = SendGetRequest(requestUrl);
             listOfArticles = JsonConvert.DeserializeObject<ListOfArticles>(webResponse.Content);
             return listOfArticles;
         }
 
-        public static ListOfArticles getArticlesListByCategories(List<Category> categories, string language = "", string scope = "", decimal page = 0)
+        public static ListOfArticles getArticlesListByCategories(List<Category> categories, string language = "", Scopes scope = Scopes.none, decimal page = 0, int pageSize = 0)
         {
             if (categories == null)
             {
@@ -170,10 +168,10 @@ namespace QuoteSharp
                     ids.Add(category.id);
                 }
             }
-            return getArticlesListByCategories(ids, language, scope, page);
+            return getArticlesListByCategories(ids, language, scope, page, pageSize);
         }
 
-        public static ListOfArticles getArticlesListByCategories(List<decimal> ids, string language = "", string scope = "", decimal page = 0)
+        public static ListOfArticles getArticlesListByCategories(List<decimal> ids, string language = "", Scopes scope = Scopes.none, decimal page = 0, int pageSize = 0)
         {
             if (ids == null)
             {
@@ -191,9 +189,13 @@ namespace QuoteSharp
             {
                 requstUrl = requstUrl + "&language=" + System.Web.HttpUtility.UrlEncode(language);
             }
-            if (!string.IsNullOrEmpty(scope))
+            if (scope != Scopes.none)
             {
-                requstUrl = requstUrl + "&scope=" + System.Web.HttpUtility.UrlEncode(scope);
+                requstUrl = requstUrl + "&scope=" + System.Web.HttpUtility.UrlEncode(scope.ToString());
+            }
+            if (pageSize > 0)
+            {
+                requstUrl += "&pageSize=" + pageSize.ToString();
             }
             webResponse = SendGetRequest(requstUrl);
             listOfArticles = JsonConvert.DeserializeObject<ListOfArticles>(webResponse.Content);
@@ -270,7 +272,7 @@ namespace QuoteSharp
             {
                 user = JsonConvert.DeserializeObject<User>(webResponse.Content);
             }
-            catch (Exception exp)
+            catch
             {
                 if (webResponse != null)
                 {   
@@ -286,12 +288,7 @@ namespace QuoteSharp
             return user;
         }
 
-        public static ListOfUsers getUsersListOfFollowers(string username)
-        {
-            return getUsersListOfFollowers(username, 0);
-        }
-
-        public static ListOfUsers getUsersListOfFollowers(string username, decimal page)
+        public static ListOfUsers getUsersListOfFollowers(string username, decimal page = 0)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -311,12 +308,28 @@ namespace QuoteSharp
             return listOfUsers;
         }
 
-        public static ListOfUsers getUsersListOfFollowings(string username)
+        public static ListOfUsers getUsersListOfFollowers(decimal id, decimal page = 0)
         {
-            return getUsersListOfFollowings(username, 0);
+            if (id <= 0)
+            {
+                return null;
+            }
+            ListOfUsers listOfUsers;
+            Response webResponse;
+            if (page == 0)
+            {
+                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}", ApiBaseUrl, "/user/listFollowers/", id.ToString()));
+            }
+            else
+            {
+                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}&page=", ApiBaseUrl, "/user/listFollowers/", id.ToString(), page.ToString()));
+            }
+            listOfUsers = JsonConvert.DeserializeObject<ListOfUsers>(webResponse.Content);
+            return listOfUsers;
         }
 
-        public static ListOfUsers getUsersListOfFollowings(string username, decimal page)
+
+        public static ListOfUsers getUsersListOfFollowings(string username, decimal page = 0)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -331,6 +344,26 @@ namespace QuoteSharp
             else
             {
                 webResponse = SendGetRequest(string.Format("{0}{1}?username={2}&page=", ApiBaseUrl, "/user/listFollowings/", System.Web.HttpUtility.UrlEncode(username), page.ToString()));
+            }
+            listOfUsers = JsonConvert.DeserializeObject<ListOfUsers>(webResponse.Content);
+            return listOfUsers;
+        }
+
+        public static ListOfUsers getUsersListOfFollowings(decimal id, decimal page = 0)
+        {
+            if (id <= 0)
+            {
+                return null;
+            }
+            ListOfUsers listOfUsers;
+            Response webResponse;
+            if (page == 0)
+            {
+                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}", ApiBaseUrl, "/user/listFollowings/", id.ToString()));
+            }
+            else
+            {
+                webResponse = SendGetRequest(string.Format("{0}{1}?id={2}&page=", ApiBaseUrl, "/user/listFollowings/", id.ToString(), page.ToString()));
             }
             listOfUsers = JsonConvert.DeserializeObject<ListOfUsers>(webResponse.Content);
             return listOfUsers;

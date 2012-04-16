@@ -42,6 +42,7 @@ namespace QuoteSharp
         public decimal id { get; set; }
         public string name { get; set; }
         public decimal order { get; set; }
+        public User curator { get; set; }
 
         public override string ToString()
         {

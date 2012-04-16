@@ -46,6 +46,7 @@ namespace QuoteSharp
         public string language { get; set; }
         public DateTime? created { get; set; }
         public float popularity { get; set; }
+        public decimal ert { get; set; }
 
         public Recommendation topquote { get; set; }
         public decimal recommendationCount { get; set; }

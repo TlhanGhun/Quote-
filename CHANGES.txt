@@ -1,3 +1,13 @@
+1.0.2
+Added all new features of API updates 1.0.5 and 1.0.6 (see https://github.com/QUOTEfm/QUOTE.fm-API)
+pageSize parameter on list requests
+scope parameter on all list requests
+Estimated reading time (ert) added to articles
+Curator added to categories
+User list followers and followings now also can be called by user ID 
+Scope is now an enum
+Overloaded functions now (if possible) changed to optional parameters
+
 1.0.1
 Added popularity floats for articles and recommendation (API update 1.0.3 at https://github.com/QUOTEfm/QUOTE.fm-API)
 Tested with new date format (no changes needed)
